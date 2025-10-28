@@ -45,7 +45,7 @@ onMounted(async () => {
     console.log('加载编辑器配置，文档 ID:', documentId)
     const response = await onlyofficeApi.getConfig(documentId)
     console.log('后端返回配置:', response)
-    
+    console.log( response.onlyoffice_server)
     // 设置服务器 URL
     documentServerUrl.value = response.onlyoffice_server
     
