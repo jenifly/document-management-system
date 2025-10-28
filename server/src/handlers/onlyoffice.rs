@@ -3,6 +3,7 @@ use axum::{
     Json,
 };
 use diesel::prelude::*;
+use jsonwebtoken::encode;
 use uuid::Uuid;
 
 use crate::{
@@ -78,8 +79,20 @@ pub async fn get_editor_config(
         &state.config.app.url,
     )?;
 
-    // Generate JWT token for OnlyOffice
-    let token = onlyoffice_service.generate_jwt_token(&editor_config)?;
+    // 构建完整的配置对象（传递给 DocEditor 的对象）
+    let full_config = serde_json::json!({
+        "document": editor_config.document,
+        "documentType": document_type,
+        "editorConfig": editor_config.editor_config,
+    });
+
+    // 使用完整配置生成 JWT token
+    let token = encode(
+        &jsonwebtoken::Header::default(),
+        &full_config,
+        &jsonwebtoken::EncodingKey::from_secret(state.config.onlyoffice.jwt_secret.as_bytes()),
+    )
+    .map_err(|e| AppError::InternalServerError(format!("Failed to generate OnlyOffice JWT: {}", e)))?;
 
     Ok(Json(serde_json::json!({
         "config": {
