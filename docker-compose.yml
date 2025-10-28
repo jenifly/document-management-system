@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: dms_postgres
+    environment:
+      POSTGRES_USER: dms_user
+      POSTGRES_PASSWORD: dms_password
+      POSTGRES_DB: document_management
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dms_network
+
+  minio:
+    image: minio/minio:latest
+    container_name: dms_minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - dms_network
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.5
+    container_name: dms_meilisearch
+    environment:
+      MEILI_MASTER_KEY: masterKey
+      MEILI_ENV: development
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+    networks:
+      - dms_network
+
+  onlyoffice:
+    image: onlyoffice/documentserver:latest
+    container_name: dms_onlyoffice
+    environment:
+      JWT_ENABLED: "true"
+      JWT_SECRET: your-onlyoffice-jwt-secret
+    ports:
+      - "8081:80"
+    volumes:
+      - onlyoffice_data:/var/www/onlyoffice/Data
+    networks:
+      - dms_network
+
+volumes:
+  postgres_data:
+  minio_data:
+  meilisearch_data:
+  onlyoffice_data:
+
+networks:
+  dms_network:
+    driver: bridge
+

@@ -1,0 +1,5 @@
+{
+	"dependencies": {
+		"@onlyoffice/document-editor-vue": "^1.6.1"
+	}
+}
