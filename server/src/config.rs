@@ -32,6 +32,7 @@ pub struct JwtConfig {
 #[derive(Debug, Clone, Deserialize)]
 pub struct MinioConfig {
     pub endpoint: String,
+    pub internal_endpoint: Option<String>, // OnlyOffice 内部访问用的 endpoint
     pub access_key: String,
     pub secret_key: String,
     pub bucket: String,
@@ -85,6 +86,7 @@ impl Config {
         let minio = MinioConfig {
             endpoint: env::var("MINIO_ENDPOINT")
                 .expect("MINIO_ENDPOINT must be set"),
+            internal_endpoint: env::var("MINIO_INTERNAL_ENDPOINT").ok(), // 可选的内部 endpoint
             access_key: env::var("MINIO_ACCESS_KEY")
                 .expect("MINIO_ACCESS_KEY must be set"),
             secret_key: env::var("MINIO_SECRET_KEY")

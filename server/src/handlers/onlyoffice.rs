@@ -53,9 +53,10 @@ pub async fn get_editor_config(
         PermissionType::Write,
     )?;
 
-    // Get presigned URL for the document
+    // Get presigned URL for the document (使用 OnlyOffice 可访问的 URL)
     let storage_service = StorageService::new(&state.config.minio)?;
-    let file_url = storage_service.get_file_url(&document.file_path, 3600).await?;
+    let file_url = storage_service.get_file_url_for_onlyoffice(&document.file_path, 3600).await?;
+    tracing::info!("Generated OnlyOffice file URL: {}", file_url);
 
     // Get file extension
     let file_extension = std::path::Path::new(&document.name)

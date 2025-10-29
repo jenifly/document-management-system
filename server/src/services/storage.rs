@@ -8,6 +8,7 @@ use crate::error::{AppError, Result};
 #[derive(Clone)]
 pub struct StorageService {
     operator: Arc<Operator>,
+    config: MinioConfig, // 保存配置以便生成 OnlyOffice URL
 }
 
 impl StorageService {
@@ -34,6 +35,7 @@ impl StorageService {
 
         Ok(Self {
             operator: Arc::new(operator),
+            config: config.clone(),
         })
     }
 
@@ -74,6 +76,24 @@ impl StorageService {
             .map_err(|e| AppError::InternalServerError(format!("Failed to generate presigned URL: {}", e)))?
             .uri()
             .to_string();
+
+        Ok(url)
+    }
+
+    /// 生成 OnlyOffice 可访问的文件 URL（使用内部 endpoint）
+    pub async fn get_file_url_for_onlyoffice(&self, object_key: &str, expires_in: u32) -> Result<String> {
+        let mut url = self.operator
+            .presign_read(object_key, std::time::Duration::from_secs(expires_in as u64))
+            .await
+            .map_err(|e| AppError::InternalServerError(format!("Failed to generate presigned URL: {}", e)))?
+            .uri()
+            .to_string();
+
+        // 如果配置了内部 endpoint，则替换为内部地址（供 Docker 容器访问）
+        if let Some(internal_endpoint) = &self.config.internal_endpoint {
+            url = url.replace(&self.config.endpoint, internal_endpoint);
+            tracing::debug!("Replaced endpoint for OnlyOffice: {} -> {}", &self.config.endpoint, internal_endpoint);
+        }
 
         Ok(url)
     }
