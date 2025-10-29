@@ -48,7 +48,6 @@ onMounted(async () => {
     console.log( response.onlyoffice_server)
     // 设置服务器 URL
     documentServerUrl.value = response.onlyoffice_server
-    
     // 设置编辑器配置
     editorConfig.value = response.config
     

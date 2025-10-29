@@ -91,8 +91,19 @@ impl StorageService {
 
         // 如果配置了内部 endpoint，则替换为内部地址（供 Docker 容器访问）
         if let Some(internal_endpoint) = &self.config.internal_endpoint {
-            url = url.replace(&self.config.endpoint, internal_endpoint);
-            tracing::debug!("Replaced endpoint for OnlyOffice: {} -> {}", &self.config.endpoint, internal_endpoint);
+            let original_endpoint = &self.config.endpoint;
+            url = url.replace(original_endpoint, internal_endpoint);
+            tracing::info!(
+                "Replaced endpoint for OnlyOffice: {} -> {} | Final URL: {}", 
+                original_endpoint, 
+                internal_endpoint,
+                url
+            );
+        } else {
+            tracing::warn!(
+                "MINIO_INTERNAL_ENDPOINT not configured! OnlyOffice may not be able to access the document. URL: {}", 
+                url
+            );
         }
 
         Ok(url)

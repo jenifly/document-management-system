@@ -27,6 +27,7 @@ pub struct OnlyOfficeEditorConfig {
     pub callback_url: String,
     pub mode: String,
     pub user: OnlyOfficeUser,
+    pub lang: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -98,6 +99,7 @@ impl OnlyOfficeService {
                 id: user_id.to_string(),
                 name: user_name.to_string(),
             },
+            lang: "zh".to_string(),
         };
 
         Ok(OnlyOfficeEditorResponse {
